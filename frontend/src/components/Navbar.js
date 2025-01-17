@@ -15,20 +15,37 @@ import {
 
 const NavButton = ({ children, icon: Icon, onClick, active = false }) => (
   <motion.button
-    whileHover={{ scale: 1.02 }}
+    whileHover={{ y: -2 }}
     whileTap={{ scale: 0.98 }}
     onClick={onClick}
     className={`
       group px-4 py-2 text-sm font-medium rounded-xl
-      flex items-center gap-2 transition-all duration-200
+      flex items-center gap-2 transition-all duration-200 relative
       ${active 
         ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white' 
-        : 'hover:bg-white/[0.05] text-white/70 hover:text-white'
+        : 'hover:bg-white/[0.02] text-white/70 hover:text-white'
       }
     `}
   >
-    {Icon && <Icon className="w-4 h-4" />}
+    {Icon && (
+      <motion.div
+        whileHover={{ rotate: 5 }}
+        className="transition-transform duration-200"
+      >
+        <Icon className="w-4 h-4" />
+      </motion.div>
+    )}
     <span className="font-['Plus_Jakarta_Sans']">{children}</span>
+    
+    {/* Animated underline effect */}
+    {!active && (
+      <motion.div
+        className="absolute bottom-0 left-0 h-[2px] bg-gradient-to-r from-indigo-500 to-purple-500"
+        initial={{ width: 0 }}
+        whileHover={{ width: '100%' }}
+        transition={{ duration: 0.2 }}
+      />
+    )}
   </motion.button>
 );
 
@@ -51,14 +68,19 @@ const WalletButton = () => {
   return (
     <div className="relative">
       <motion.button
-        whileHover={{ scale: 1.02 }}
+        whileHover={{ y: -2 }}
         whileTap={{ scale: 0.98 }}
         onClick={() => setIsOpen(!isOpen)}
-        className="px-4 py-2 rounded-xl bg-white/[0.03] border border-white/10
-          hover:border-indigo-500/40 transition-all duration-200
-          flex items-center gap-2 text-white/90 hover:text-white"
+        className="px-4 py-2 rounded-xl bg-gradient-to-r from-white/[0.03] to-white/[0.05]
+          border border-white/10 hover:border-indigo-500/40 transition-all duration-200
+          flex items-center gap-2 text-white/90 hover:text-white backdrop-blur-sm"
       >
-        <WalletIcon className="w-4 h-4" />
+        <motion.div
+          whileHover={{ rotate: 5 }}
+          className="transition-transform duration-200"
+        >
+          <WalletIcon className="w-4 h-4" />
+        </motion.div>
         <span className="font-['Plus_Jakarta_Sans'] text-sm">
           {`${user.walletAddress.slice(0, 6)}...${user.walletAddress.slice(-4)}`}
         </span>
@@ -68,20 +90,22 @@ const WalletButton = () => {
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 10 }}
+            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 10, scale: 0.95 }}
+            transition={{ duration: 0.2 }}
             className="absolute right-0 mt-2 w-48 rounded-xl bg-[#1A1A1A] border border-white/10
               shadow-lg shadow-black/20 backdrop-blur-xl overflow-hidden"
           >
-            <button
+            <motion.button
+              whileHover={{ x: 4, backgroundColor: 'rgba(255, 255, 255, 0.05)' }}
               onClick={handleDisconnect}
               className="w-full px-4 py-3 flex items-center gap-2 text-sm text-white/70
-                hover:text-white hover:bg-white/[0.05] transition-all duration-200"
+                hover:text-white transition-all duration-200"
             >
               <LogOut className="w-4 h-4" />
               <span className="font-['Plus_Jakarta_Sans']">Disconnect Wallet</span>
-            </button>
+            </motion.button>
           </motion.div>
         )}
       </AnimatePresence>
@@ -101,10 +125,13 @@ const Navbar = () => {
       className="flex items-center gap-3 cursor-pointer group"
       onClick={() => navigate('/')}
     >
-      <motion.span className="text-2xl font-bold text-white font-['Space_Grotesk'] hidden sm:block
-        bg-clip-text text-transparent bg-gradient-to-r from-white to-white/70 group-hover:to-indigo-400
-        transition-all duration-200">
-        Art <span className='text-blue-500' >Block</span>
+      <motion.span 
+        className="text-2xl font-bold text-white font-['Space_Grotesk'] hidden sm:block
+          bg-clip-text text-transparent bg-gradient-to-r from-white to-white/70 
+          group-hover:to-indigo-400 transition-all duration-200"
+        whileHover={{ y: -2 }}
+      >
+        Art <span className='bg-gradient-to-r from-blue-500 to-indigo-500 text-transparent bg-clip-text'>Block</span>
       </motion.span>
     </motion.div>
   );
@@ -114,7 +141,8 @@ const Navbar = () => {
       <motion.nav 
         initial={{ y: -100 }}
         animate={{ y: 0 }}
-        className="sticky top-0 z-50 bg-[#0A0A0A]/80 backdrop-blur-xl border-b border-white/10"
+        className="sticky top-0 z-50 bg-gradient-to-b from-[#0A0A0A]/95 to-[#0A0A0A]/80 
+          backdrop-blur-xl border-b border-white/10"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-20">
@@ -157,7 +185,8 @@ const Navbar = () => {
     <motion.nav 
       initial={{ y: -100 }}
       animate={{ y: 0 }}
-      className="sticky top-0 z-50 bg-[#0A0A0A]/80 backdrop-blur-xl border-b border-white/10"
+      className="sticky top-0 z-50 bg-gradient-to-b from-[#0A0A0A]/95 to-[#0A0A0A]/80 
+        backdrop-blur-xl border-b border-white/10"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
@@ -194,12 +223,13 @@ const Navbar = () => {
         <AnimatePresence>
           {isMenuOpen && (
             <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
+              initial={{ opacity: 0, y: -20, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -20, scale: 0.95 }}
               transition={{ duration: 0.2 }}
               className="md:hidden absolute left-0 right-0 mt-2 mx-4 p-4 
-                bg-[#1A1A1A] backdrop-blur-xl border border-white/10 rounded-xl
+                bg-gradient-to-b from-[#1A1A1A] to-[#1A1A1A]/90 
+                backdrop-blur-xl border border-white/10 rounded-xl
                 shadow-lg shadow-black/20"
             >
               <div className="space-y-2">

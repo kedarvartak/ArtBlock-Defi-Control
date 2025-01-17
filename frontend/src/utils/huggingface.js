@@ -1,8 +1,24 @@
 import { generateImageHash } from './imageHash';
 import { checkImageHashExists, storeNFTData } from './api';
 
+// Constants for the model
 const HF_API_TOKEN = "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";
-const MODEL_URL = "https://api-inference.huggingface.co/models/strangerzonehf/Flux-NFTv4-Designs-LoRA";
+export const MODELS = {
+  FLUX_1_DEV: {
+    url: "https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-dev",
+    name: "FLUX.1 Dev",
+    prefix: "FLUX.1:",
+    specialties: [
+      'abstract', 'pattern', 'landscape', 'modern', 'minimal',
+      'geometric', 'artistic', 'experimental'
+    ],
+    bestFor: {
+      quickGeneration: true,
+      abstractArt: true,
+      simpleDesigns: true
+    }
+  }
+};
 
 // Keep track of recent prompts
 const recentPrompts = new Set();
@@ -38,13 +54,67 @@ const generateUniquePrompt = (basePrompt, attempt = 0) => {
   return `${basePrompt} [seed:${uniqueIdentifier}]`;
 };
 
+// Simple cache implementation for each model
+const imageCache = new Map();
+
+export const generateImage = async (prompt) => {
+  const model = MODELS.FLUX_1_DEV;
+  const cacheKey = `FLUX_1_DEV:${prompt}`;
+
+  // Check cache first
+  if (imageCache.has(cacheKey)) {
+    return imageCache.get(cacheKey);
+  }
+
+  try {
+    const response = await fetch(model.url, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${HF_API_TOKEN}`,
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+      },
+      body: JSON.stringify({
+        inputs: prompt,
+        options: {
+          wait_for_model: true,
+          use_cache: true
+        }
+      }),
+    });
+
+    // Handle queue status
+    if (response.status === 503) {
+      const { estimated_time } = await response.json();
+      await new Promise(resolve => setTimeout(resolve, estimated_time * 1000));
+      return generateImage(prompt); // Retry
+    }
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || `HTTP error! status: ${response.status}`);
+    }
+
+    const blob = await response.blob();
+    const imageUrl = URL.createObjectURL(blob);
+    
+    // Cache the result
+    imageCache.set(cacheKey, imageUrl);
+    
+    return imageUrl;
+  } catch (error) {
+    console.error(`Error generating image with ${model.name}:`, error);
+    throw error;
+  }
+};
+
 export const generateUniqueImage = async (prompt, maxAttempts = 3) => {
   let attempt = 0;
   
   while (attempt < maxAttempts) {
     try {
       const uniquePrompt = generateUniquePrompt(prompt, attempt);
-      console.log(`🔍 Using prompt: "${uniquePrompt}"`);
+      console.log(`🔍 Using prompt with FLUX.1 Dev: "${uniquePrompt}"`);
       
       const imageUrl = await generateImage(uniquePrompt);
       const imageHash = await generateImageHash(imageUrl);
@@ -65,19 +135,18 @@ export const generateUniqueImage = async (prompt, maxAttempts = 3) => {
         imageUrl,
         metadata: {
           generationAttempt: attempt,
+          modelUsed: MODELS.FLUX_1_DEV.name,
           timestamp: new Date().toISOString()
         }
       });
       
-      console.log(`✨ Successfully generated unique NFT on attempt ${attempt + 1}`);
-      if (attempt > 0) {
-        console.log(`🎯 Used variation to ensure uniqueness`);
-      }
+      console.log(`✨ Successfully generated unique NFT using FLUX.1 Dev on attempt ${attempt + 1}`);
       
       return {
         imageUrl,
         imageHash,
-        prompt: uniquePrompt
+        prompt: uniquePrompt,
+        modelUsed: MODELS.FLUX_1_DEV.name
       };
       
     } catch (error) {
@@ -87,56 +156,4 @@ export const generateUniqueImage = async (prompt, maxAttempts = 3) => {
   }
   
   throw new Error('Failed to generate a unique image after multiple attempts');
-};
-
-// Simple cache implementation
-const imageCache = new Map();
-
-export const generateImage = async (prompt) => {
-  // Check cache first
-  if (imageCache.has(prompt)) {
-    return imageCache.get(prompt);
-  }
-
-  try {
-    const response = await fetch(MODEL_URL, {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${HF_API_TOKEN}`,
-        "Content-Type": "application/json",
-        "Accept": "application/json",
-      },
-      body: JSON.stringify({
-        inputs: prompt,
-        options: {
-          wait_for_model: true,
-          use_cache: true // Enable Hugging Face's caching
-        }
-      }),
-    });
-
-    // Handle queue status
-    if (response.status === 503) {
-      const { estimated_time } = await response.json();
-      // Wait and retry
-      await new Promise(resolve => setTimeout(resolve, estimated_time * 1000));
-      return generateImage(prompt); // Retry
-    }
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || `HTTP error! status: ${response.status}`);
-    }
-
-    const blob = await response.blob();
-    const imageUrl = URL.createObjectURL(blob);
-    
-    // Cache the result
-    imageCache.set(prompt, imageUrl);
-    
-    return imageUrl;
-  } catch (error) {
-    console.error("Error generating image:", error);
-    throw error;
-  }
 }; 

@@ -1,9 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Wand2, Info, Image as ImageIcon, Sparkles, AlertCircle, Download } from 'lucide-react';
-import { generateImage, generateUniqueImage } from '../utils/huggingface';
-import { debounce } from 'lodash';
+import { Wand2, Info, Image as ImageIcon, Sparkles, Download } from 'lucide-react';
+import { generateImage, generateUniqueImage, MODELS } from '../utils/huggingface';
+import gsap from 'gsap';
+import _ from 'lodash'; 
+import { enhancePrompt } from '../utils/openai';
 
+// RetroBeams Component
 const RetroBeams = () => {
   const beamsRef = useRef(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
@@ -21,12 +24,44 @@ const RetroBeams = () => {
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
+  // Random beam animation effect
+  useEffect(() => {
+    const animateRandomBeam = () => {
+      if (beamsRef.current) {
+        const beams = Array.from(beamsRef.current.querySelectorAll('.beam'));
+        const randomBeam = beams[Math.floor(Math.random() * beams.length)];
+        
+        if (randomBeam) {
+          gsap.to(randomBeam, {
+            opacity: 0.8,
+            duration: 0.5,
+            ease: "power2.in",
+            onComplete: () => {
+              gsap.to(randomBeam, {
+                opacity: 0.1,
+                duration: 1,
+                ease: "power2.out"
+              });
+            }
+          });
+        }
+      }
+    };
+
+    const interval = setInterval(animateRandomBeam, 2000);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <motion.div 
       ref={beamsRef}
       className="fixed inset-0 overflow-hidden pointer-events-none"
       style={{ zIndex: 0 }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 1.5 }}
     >
+      {/* Grid Background */}
       <div 
         className="absolute inset-0"
         style={{
@@ -39,6 +74,36 @@ const RetroBeams = () => {
           transition: 'transform 0.2s ease-out'
         }}
       />
+
+      {/* Horizontal Beams */}
+      <div className="absolute inset-0">
+        {[...Array(4)].map((_, i) => (
+          <motion.div
+            key={`h-${i}`}
+            className="beam absolute w-full h-[2px] left-0"
+            style={{
+              top: `${25 + i * 20}%`,
+              background: 'linear-gradient(90deg, transparent, rgba(147, 197, 253, 0.1), transparent)',
+              opacity: 0.1
+            }}
+          />
+        ))}
+      </div>
+
+      {/* Vertical Beams */}
+      <div className="absolute inset-0">
+        {[...Array(6)].map((_, i) => (
+          <motion.div
+            key={`v-${i}`}
+            className="beam absolute h-full w-[2px]"
+            style={{
+              left: `${20 + i * 15}%`,
+              background: 'linear-gradient(180deg, transparent, rgba(147, 197, 253, 0.1), transparent)',
+              opacity: 0.1
+            }}
+          />
+        ))}
+      </div>
     </motion.div>
   );
 };
@@ -52,9 +117,12 @@ const AINFTGenerator = () => {
   const progressInterval = useRef(null);
   const [previewPrompt, setPreviewPrompt] = useState('');
   const [generationAttempt, setGenerationAttempt] = useState(0);
+  const [selectedModel, setSelectedModel] = useState('FLUX_NFT_V4');
+  const [enhancedPrompt, setEnhancedPrompt] = useState('');
+  const [isEnhancing, setIsEnhancing] = useState(false);
 
   // Debounced preview update
-  const updatePreview = debounce((newPrompt) => {
+  const updatePreview = _.debounce((newPrompt) => {
     setPreviewPrompt(newPrompt);
   }, 500);
 
@@ -87,22 +155,40 @@ const AINFTGenerator = () => {
   const handleGenerate = async () => {
     setLoading(true);
     setError(null);
+    setIsEnhancing(true);
     startProgressSimulation();
     
     try {
-      const formattedPrompt = prompt.startsWith("NFT V4:") ? prompt : `NFT V4: ${prompt}`;
-      const { imageUrl, imageHash, prompt: finalPrompt } = await generateUniqueImage(formattedPrompt);
+      // First, enhance the prompt using ChatGPT
+      console.log('🎯 Original prompt:', prompt);
+      const improvedPrompt = await enhancePrompt(prompt);
+      setEnhancedPrompt(improvedPrompt);
+      console.log('✨ Enhanced prompt:', improvedPrompt);
+      
+      // Generate image with enhanced prompt
+      const { imageUrl, imageHash, prompt: finalPrompt, modelUsed } = 
+        await generateUniqueImage(improvedPrompt);
       
       setGeneratedImage(imageUrl);
-      console.log('Generated unique NFT with hash:', imageHash);
-      console.log('Final prompt used:', finalPrompt);
+      console.log('🖼️ Generated unique NFT with hash:', imageHash);
+      console.log('📝 Final prompt used:', finalPrompt);
+      console.log('🤖 Model used:', modelUsed);
+      
+      // Log the prompt transformation
+      console.log('\nPrompt Transformation:');
+      console.table({
+        original: prompt,
+        enhanced: improvedPrompt,
+        final: finalPrompt
+      });
       
     } catch (error) {
       setError(error.message || "Failed to generate unique image. Please try again.");
-      console.error("Error:", error);
+      console.error("❌ Error:", error);
     } finally {
       stopProgressSimulation();
       setLoading(false);
+      setIsEnhancing(false);
     }
   };
 
@@ -117,280 +203,211 @@ const AINFTGenerator = () => {
     }
   };
 
+  const promptEnhancementSection = (
+    <div className="mt-4 space-y-3">
+      {isEnhancing && (
+        <div className="flex items-center gap-2 text-white/60 font-['Outfit']">
+          <div className="w-4 h-4 border-2 border-[#6366F1]/20 border-t-[#6366F1] 
+            rounded-full animate-spin"
+          />
+          <span>Enhancing prompt with AI...</span>
+        </div>
+      )}
+      {enhancedPrompt && !isEnhancing && (
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-[#6366F1]" />
+            <span className="text-white/80 font-['Outfit'] text-sm">Enhanced Prompt:</span>
+          </div>
+          <div className="p-3 bg-black/20 rounded-lg border border-white/10">
+            <p className="text-white/60 font-['Outfit'] text-sm">{enhancedPrompt}</p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-[#0A0A0A] relative overflow-hidden">
       <RetroBeams />
       <div className="relative" style={{ zIndex: 1 }}>
-        <div className="max-w-7xl mx-auto px-4 py-16">
-          {/* Enhanced Header Section */}
+        <div className="max-w-7xl mx-auto px-4 py-12">
+          {/* Header Section */}
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center mb-16"
+            className="text-center mb-16 relative space-y-6"
           >
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
               className="inline-flex items-center gap-2 px-4 py-2 
-                bg-white/5 backdrop-blur-lg rounded-full 
-                border border-white/10 mb-6"
+                bg-white/5 backdrop-blur-lg rounded-full border border-white/10"
             >
               <div className="w-2 h-2 bg-[#6366F1] rounded-full animate-pulse" />
               <span className="text-white/80 text-sm font-['Plus_Jakarta_Sans'] font-medium">
-                AI-Powered NFT Generation
+                Powered by FLUX.1
               </span>
             </motion.div>
 
-            <h1 className="text-7xl lg:text-8xl font-bold text-white leading-none 
-              tracking-tight font-['Space_Grotesk'] mb-6"
-            >
-              <motion.span
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-                className="block bg-gradient-to-r from-white via-white to-[#6366F1] 
-                  bg-clip-text text-transparent"
-              >
-                Create Unique
-              </motion.span>
-              <motion.span
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 }}
-                className="block text-[#6366F1]"
-              >
-                NFT Artwork
-              </motion.span>
-              <motion.span
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5 }}
-                className="block"
-              >
-                with AI
-              </motion.span>
+            <h1 className="text-5xl md:text-6xl font-black text-white font-['Space_Grotesk']">
+              AI Image Generation
             </h1>
-
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.6 }}
-              className="text-xl text-white/60 max-w-2xl mx-auto font-['Plus_Jakarta_Sans']"
-            >
-              Transform your ideas into stunning NFT artwork using our advanced AI generator. 
-              Perfect for artists, collectors, and creators.
-            </motion.p>
+            <p className="text-xl text-white/60 max-w-2xl mx-auto font-['Outfit']">
+              Transform your ideas into stunning digital art with our advanced AI technology.
+            </p>
           </motion.div>
 
-          {/* Enhanced Main Content Grid */}
-          <div className="grid md:grid-cols-2 gap-10 items-start">
-            {/* Left Column - Input and Guidelines */}
-            <div className="space-y-8">
-              {/* Enhanced Prompt Input */}
-              <motion.div 
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                className="bg-gradient-to-br from-white/[0.03] to-transparent 
-                  border border-white/10 rounded-2xl p-8 backdrop-blur-xl"
-              >
-                <label className="block text-base font-medium text-white mb-3 
-                  font-['Space_Grotesk']"
-                >
-                  Your NFT Prompt
-                </label>
-                <div className="relative">
+          {/* Main Content */}
+          <div className="grid lg:grid-cols-5 gap-8">
+            {/* Left Column - Input */}
+            <motion.div 
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="lg:col-span-2 space-y-6"
+            >
+              {/* Prompt Input */}
+              <div className="bg-white/[0.03] backdrop-blur-lg rounded-2xl border border-white/10 overflow-hidden">
+                <div className="p-6 border-b border-white/10">
+                  <h2 className="text-2xl font-bold text-white font-['Space_Grotesk']">
+                    Input Prompt
+                  </h2>
+                </div>
+                <div className="p-6">
                   <textarea
                     value={prompt}
                     onChange={handlePromptChange}
-                    placeholder="Describe your NFT artwork in detail..."
+                    placeholder="Describe your NFT idea..."
                     className="w-full h-40 bg-black/20 border border-white/10 rounded-xl p-4 
-                      text-white placeholder-white/40 focus:border-[#6366F1]/40 
-                      focus:ring-[#6366F1]/40 transition-all duration-300 outline-none 
-                      resize-none font-['Plus_Jakarta_Sans']"
+                      text-white placeholder-white/40 focus:border-[#6366F1] focus:ring-1 
+                      focus:ring-[#6366F1] transition-all duration-200 outline-none resize-none
+                      font-['Outfit']"
                   />
-                  
+                  {promptEnhancementSection}
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={handleGenerate}
+                    disabled={loading || !prompt}
+                    className={`mt-4 w-full py-4 rounded-xl font-medium flex items-center 
+                      justify-center gap-3 transition-all duration-300 font-['Space_Grotesk']
+                      ${loading || !prompt 
+                        ? 'bg-white/5 text-white/40 cursor-not-allowed' 
+                        : 'bg-[#6366F1] text-white hover:bg-[#5558DD]'
+                      }`}
+                  >
+                    {loading ? (
+                      <>
+                        <div className="w-5 h-5 border-2 border-white/20 border-t-white 
+                          rounded-full animate-spin"
+                        />
+                        {isEnhancing ? 'Enhancing...' : 'Generating...'}
+                      </>
+                    ) : (
+                      <>
+                        <Wand2 className="w-5 h-5" />
+                        Generate Art
+                      </>
+                    )}
+                  </motion.button>
                 </div>
-                <button
-                  onClick={handleGenerate}
-                  disabled={loading || !prompt}
-                  className={`mt-5 w-full py-4 rounded-xl font-medium flex items-center 
-                    justify-center gap-2 font-['Space_Grotesk'] transition-all duration-300
-                    ${loading || !prompt 
-                      ? 'bg-white/5 text-white/40 cursor-not-allowed' 
-                      : 'bg-gradient-to-r from-[#6366F1] to-purple-500 text-white cursor-pointer hover:shadow-lg hover:shadow-[#6366F1]/20'
-                    }`}
-                >
-                  {loading ? (
-                    <>
-                      <div className="w-5 h-5 border-2 border-white/20 border-t-white 
-                        rounded-full animate-spin"
-                      />
-                      Generating...
-                    </>
-                  ) : (
-                    <>
-                      <Wand2 className="w-5 h-5" />
-                      Generate NFT
-                    </>
-                  )}
-                </button>
-              </motion.div>
+              </div>
 
-              {/* Enhanced Guidelines */}
-              <motion.div 
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                className="bg-gradient-to-br from-white/[0.03] to-transparent 
-                  border border-white/10 rounded-2xl p-8 backdrop-blur-xl"
-              >
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="p-2 bg-[#6366F1]/10 rounded-xl">
-                    <Info className="w-5 h-5 text-[#6366F1]" />
-                  </div>
-                  <h3 className="text-xl text-white font-bold font-['Space_Grotesk']">
-                    Prompt Guidelines
-                  </h3>
+              {/* Model Info */}
+              <div className="bg-white/[0.03] backdrop-blur-lg rounded-2xl border border-white/10 overflow-hidden">
+                <div className="p-6 border-b border-white/10">
+                  <h2 className="text-2xl font-bold text-white font-['Space_Grotesk']">
+                    Model Information
+                  </h2>
                 </div>
-                <div className="space-y-5 text-base text-white/70 font-['Plus_Jakarta_Sans']">
-                  <p className="flex items-start gap-2">
-                    <Sparkles className="w-4 h-4 mt-1 text-[#6366F1]" />
-                    <span>Be specific about visual elements: colors, style, mood, lighting, and composition</span>
-                  </p>
-                  <p className="flex items-start gap-2">
-                    <Sparkles className="w-4 h-4 mt-1 text-[#6366F1]" />
-                    <span>Include artistic style references: digital art, pixel art, watercolor, oil painting, etc.</span>
-                  </p>
-                  <p className="flex items-start gap-2">
-                    <Sparkles className="w-4 h-4 mt-1 text-[#6366F1]" />
-                    <span>Describe character details: expressions, poses, clothing, accessories</span>
-                  </p>
-                  <p className="flex items-start gap-2">
-                    <AlertCircle className="w-4 h-4 mt-1 text-[#6366F1]" />
-                    <span>Avoid copyrighted characters or explicit content</span>
-                  </p>
+                <div className="p-6 space-y-4">
+                  {MODELS.FLUX_1_DEV.specialties.map((specialty, index) => (
+                    <motion.div
+                      key={index}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                      className="flex items-center gap-3 text-white/60 font-['Outfit']"
+                    >
+                      <Sparkles className="w-4 h-4 text-[#6366F1]" />
+                      <span className="capitalize">{specialty}</span>
+                    </motion.div>
+                  ))}
                 </div>
-              </motion.div>
-            </div>
+              </div>
+            </motion.div>
 
-            {/* Right Column - Preview and Example */}
-            <div className="space-y-8">
-              {/* Enhanced Generated Image Preview */}
-              <motion.div 
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                className="bg-gradient-to-br from-white/[0.03] to-transparent 
-                  border border-white/10 rounded-2xl p-8 backdrop-blur-xl"
-              >
-                <div className="flex items-center justify-between mb-6">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-[#6366F1]/10 rounded-xl">
-                      <ImageIcon className="w-5 h-5 text-[#6366F1]" />
-                    </div>
-                    <h3 className="text-xl font-bold text-white font-['Space_Grotesk']">Preview</h3>
-                  </div>
+            {/* Right Column - Output */}
+            <motion.div 
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="lg:col-span-3"
+            >
+              <div className="bg-white/[0.03] backdrop-blur-lg rounded-2xl border border-white/10 overflow-hidden">
+                <div className="p-6 border-b border-white/10 flex items-center justify-between">
+                  <h2 className="text-2xl font-bold text-white font-['Space_Grotesk']">
+                    Generated Art
+                  </h2>
                   {generatedImage && (
                     <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
                       onClick={handleDownload}
-                      className="p-2 bg-[#6366F1]/10 rounded-xl text-[#6366F1] 
-                        hover:bg-[#6366F1]/20 transition-colors duration-200"
+                      className="p-2 hover:bg-white/10 rounded-xl transition-colors duration-200"
                     >
-                      <Download className="w-5 h-5" />
+                      <Download className="w-5 h-5 text-white/60" />
                     </motion.button>
                   )}
                 </div>
-                
-                <div className="aspect-square rounded-xl overflow-hidden bg-black/20 
-                  border border-white/10 shadow-lg shadow-black/20"
-                >
-                  {loading ? (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <div className="flex flex-col items-center gap-4">
-                        <div className="w-10 h-10 border-4 border-[#6366F1]/20 
-                          border-t-[#6366F1] rounded-full animate-spin"
-                        />
-                        <p className="text-white/60 text-sm font-['Plus_Jakarta_Sans']">
-                          Generating your NFT...
+                <div className="p-6">
+                  <div className="aspect-square rounded-xl overflow-hidden bg-black/20 
+                    border border-white/10"
+                  >
+                    {loading ? (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <div className="flex flex-col items-center gap-4">
+                          <div className="w-10 h-10 border-3 border-[#6366F1]/20 
+                            border-t-[#6366F1] rounded-full animate-spin"
+                          />
+                          <p className="text-white/60 font-['Outfit']">
+                            Creating your masterpiece...
+                          </p>
+                          {progress > 0 && (
+                            <div className="w-48 h-1 bg-white/10 rounded-full overflow-hidden">
+                              <div 
+                                className="h-full bg-[#6366F1] transition-all duration-300"
+                                style={{ width: `${progress}%` }}
+                              />
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ) : error ? (
+                      <div className="w-full h-full flex items-center justify-center p-8">
+                        <p className="text-red-400 text-center font-['Outfit']">{error}</p>
+                      </div>
+                    ) : generatedImage ? (
+                      <motion.img 
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        src={generatedImage} 
+                        alt="Generated Art" 
+                        className="w-full h-full object-contain"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <p className="text-white/40 font-['Outfit']">
+                          Your creation will appear here
                         </p>
                       </div>
-                    </div>
-                  ) : error ? (
-                    <div className="w-full h-full flex items-center justify-center 
-                      text-red-400 text-center p-4"
-                    >
-                      {error}
-                    </div>
-                  ) : generatedImage ? (
-                    <img 
-                      src={generatedImage} 
-                      alt="Generated NFT" 
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center 
-                      text-white/40 text-center p-4 font-['Plus_Jakarta_Sans']"
-                    >
-                      Your generated NFT will appear here
-                    </div>
-                  )}
-                </div>
-              </motion.div>
-
-              {/* Enhanced Example Section */}
-              <motion.div 
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                className="bg-gradient-to-br from-white/[0.03] to-transparent 
-                  border border-white/10 rounded-2xl p-8 backdrop-blur-xl"
-              >
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="p-2 bg-[#6366F1]/10 rounded-xl">
-                    <Sparkles className="w-5 h-5 text-[#6366F1]" />
+                    )}
                   </div>
-                  <h3 className="text-xl font-bold text-white font-['Space_Grotesk']">Example</h3>
                 </div>
-                <div className="rounded-xl overflow-hidden mb-6 shadow-lg shadow-black/20">
-                  <img 
-                    src="https://huggingface.co/strangerzonehf/Flux-NFTv4-Designs-LoRA/resolve/main/images/6.png"
-                    alt="Example NFT" 
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="text-base font-['Plus_Jakarta_Sans']">
-                  <p className="font-medium text-white mb-3">Example Prompt:</p>
-                  <p className="italic text-white/70 leading-relaxed">
-                    "NFT V4: A raccoon depicted in a playful pose, wearing a green hoodie with a "Game Over" text on the front. 
-                    The raccoons fur is a mix of brown and gray with white accents on its face. Its nose is black, and it has 
-                    mischievous green eyes. The background is a pixelated video game landscape with floating clouds and coins."
-                  </p>
-                </div>
-              </motion.div>
-            </div>
+              </div>
+            </motion.div>
           </div>
         </div>
       </div>
-
-      {/* Background Decorations */}
-      <motion.div
-        animate={{ 
-          rotate: [0, 360],
-          scale: [1, 1.5, 1],
-        }}
-        transition={{ duration: 20, repeat: Infinity, repeatType: "reverse" }}
-        className="absolute -top-1/2 -right-1/2 w-full h-full 
-          bg-white/[0.02] rounded-full blur-3xl"
-      />
-      <motion.div
-        animate={{ 
-          rotate: [360, 0],
-          scale: [1, 1.5, 1],
-        }}
-        transition={{ duration: 25, repeat: Infinity, repeatType: "reverse" }}
-        className="absolute -bottom-1/2 -left-1/2 w-full h-full 
-          bg-[#6366F1]/[0.02] rounded-full blur-3xl"
-      />
     </div>
   );
 };

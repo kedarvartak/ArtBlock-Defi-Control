@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import ConnectWalletButton from './ConnectWalletButton';
 import { useNavigate } from 'react-router-dom';
 import { isAuthenticated, getUser, clearUserSession } from '../utils/auth';
 import useWalletConnection from '../hooks/useWalletConnection';
@@ -23,7 +22,7 @@ const RetroBeams = () => {
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
-  // Random beam animation effect
+ 
   useEffect(() => {
     const animateRandomBeam = () => {
       if (beamsRef.current) {
@@ -47,7 +46,7 @@ const RetroBeams = () => {
       }
     };
 
-    const interval = setInterval(animateRandomBeam, 2000); // Trigger every 2 seconds
+    const interval = setInterval(animateRandomBeam, 2000); 
     return () => clearInterval(interval);
   }, []);
 
@@ -879,36 +878,85 @@ const JoinUsSection = () => {
 
 const TickerSection = () => {
   const techStack1 = [
-    { name: 'React', icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg' },
-    { name: 'Node.js', icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nodejs/nodejs-original.svg' },
-    { name: 'Solidity', icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/solidity/solidity-original.svg' },
-    { name: 'Web3.js', icon: 'https://raw.githubusercontent.com/ChainSafe/web3.js/1.x/assets/logo/web3js.svg' },
-    { name: 'Ethereum', icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/ethereum/ethereum-original.svg' },
-    { name: 'IPFS', icon: 'https://docs.ipfs.tech/images/ipfs-logo.svg' }
+    { 
+      name: 'React.js', 
+      icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg',
+      color: '#61DAFB'
+    },
+    { 
+      name: 'Express.js', 
+      icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/express/express-original.svg',
+      color: '#000000'
+    },
+    { 
+      name: 'MongoDB', 
+      icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/mongodb/mongodb-original.svg',
+      color: '#47A248'
+    },
+    { 
+      name: 'PostgreSQL', 
+      icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/postgresql/postgresql-original.svg',
+      color: '#336791'
+    },
+    { 
+      name: 'Web3.js', 
+      icon: 'https://seeklogo.com/images/W/web3js-logo-62DEE79B50-seeklogo.com.png',
+      color: '#F16822'
+    },
+    { 
+      name: 'IPFS', 
+      icon: 'https://docs.ipfs.tech/images/ipfs-logo.svg',
+      color: '#65C2CB'
+    }
   ];
 
   const techStack2 = [
-    { name: 'TailwindCSS', icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/tailwindcss/tailwindcss-plain.svg' },
-    { name: 'TypeScript', icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/typescript/typescript-original.svg' },
-    { name: 'MongoDB', icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/mongodb/mongodb-original.svg' },
-    { name: 'GraphQL', icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/graphql/graphql-plain.svg' },
-    { name: 'AWS', icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/amazonwebservices/amazonwebservices-original.svg' },
-    { name: 'Docker', icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/docker/docker-original.svg' }
+    { 
+      name: 'Solidity', 
+      icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/solidity/solidity-original.svg',
+      color: '#363636'
+    },
+    
+    { 
+      name: 'Spring Boot', 
+      icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/spring/spring-original.svg',
+      color: '#6DB33F'
+    },
+    { 
+      name: 'Flutter', 
+      icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/flutter/flutter-original.svg',
+      color: '#02569B'
+    },
+    { 
+      name: 'MetaMask', 
+      icon: 'https://upload.wikimedia.org/wikipedia/commons/3/36/MetaMask_Fox.svg',
+      color: '#E2761B'
+    },
+    
   ];
 
   return (
     <section className="relative py-20 overflow-hidden">
-      {/* Animated Background */}
-      <div className="absolute inset-0 -z-10">
+      {/* Section Header */}
+      <div className="text-center mb-16">
         <motion.div
-          animate={{ 
-            rotate: [0, 360],
-            scale: [1, 1.5, 1],
-          }}
-          transition={{ duration: 20, repeat: Infinity, repeatType: "reverse" }}
-          className="absolute -top-1/2 -right-1/2 w-full h-full 
-            bg-white/[0.02] rounded-full blur-3xl"
-        />
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          className="inline-flex items-center gap-2 px-4 py-2 
+            bg-white/5 backdrop-blur-lg rounded-full 
+            border border-white/10 mb-6"
+        >
+          <div className="w-2 h-2 bg-[#6366F1] rounded-full animate-pulse" />
+          <span className="text-white/80 text-sm font-['Plus_Jakarta_Sans'] font-medium">
+            Powered By Latest Tech
+          </span>
+        </motion.div>
+        <h2 className="text-4xl md:text-5xl font-bold text-white font-['Space_Grotesk'] mb-4">
+          Our Tech Stack
+        </h2>
+        <p className="text-white/60 max-w-2xl mx-auto font-['Outfit']">
+          Built with cutting-edge technologies for optimal performance and security
+        </p>
       </div>
 
       {/* First Ticker */}
@@ -916,7 +964,7 @@ const TickerSection = () => {
         <motion.div
           animate={{ x: [0, -1920] }}
           transition={{ 
-            duration: 20,
+            duration: 30,
             repeat: Infinity,
             ease: "linear"
           }}
@@ -925,17 +973,25 @@ const TickerSection = () => {
           {[...techStack1, ...techStack1].map((tech, i) => (
             <motion.div
               key={i}
-              whileHover={{ scale: 1.05 }}
-              className="flex-shrink-0 px-6 py-4 bg-white/[0.03] backdrop-blur-lg 
-                rounded-xl border border-white/10 flex items-center gap-3 
-                group hover:border-[#6366F1]/40 transition-all duration-300"
+              whileHover={{ scale: 1.05, backgroundColor: 'rgba(255, 255, 255, 0.05)' }}
+              className="flex-shrink-0 px-6 py-4 bg-white/[0.02] backdrop-blur-lg 
+                rounded-xl border border-white/10 flex items-center gap-4 
+                group hover:border-[#6366F1]/40 transition-all duration-300
+                min-w-[200px] justify-center"
             >
-              <img 
-                src={tech.icon} 
-                alt={tech.name}
-                className="w-8 h-8 group-hover:scale-110 transition-transform duration-300" 
-              />
-              <span className="text-white/60 group-hover:text-white font-['Plus_Jakarta_Sans']">
+              <div className="w-10 h-10 relative flex items-center justify-center">
+                <motion.div
+                  className="absolute inset-0 rounded-full"
+                  style={{ backgroundColor: `${tech.color}15` }}
+                  whileHover={{ scale: 1.2 }}
+                />
+                <img 
+                  src={tech.icon} 
+                  alt={tech.name}
+                  className="w-8 h-8 relative z-10 group-hover:scale-110 transition-transform duration-300" 
+                />
+              </div>
+              <span className="text-white/60 group-hover:text-white font-['Plus_Jakarta_Sans'] font-medium">
                 {tech.name}
               </span>
             </motion.div>
@@ -948,7 +1004,7 @@ const TickerSection = () => {
         <motion.div
           animate={{ x: [-1920, 0] }}
           transition={{ 
-            duration: 25,
+            duration: 35,
             repeat: Infinity,
             ease: "linear"
           }}
@@ -957,17 +1013,25 @@ const TickerSection = () => {
           {[...techStack2, ...techStack2].map((tech, i) => (
             <motion.div
               key={i}
-              whileHover={{ scale: 1.05 }}
-              className="flex-shrink-0 px-6 py-4 bg-white/[0.03] backdrop-blur-lg 
-                rounded-xl border border-white/10 flex items-center gap-3 
-                group hover:border-[#6366F1]/40 transition-all duration-300"
+              whileHover={{ scale: 1.05, backgroundColor: 'rgba(255, 255, 255, 0.05)' }}
+              className="flex-shrink-0 px-6 py-4 bg-white/[0.02] backdrop-blur-lg 
+                rounded-xl border border-white/10 flex items-center gap-4 
+                group hover:border-[#6366F1]/40 transition-all duration-300
+                min-w-[200px] justify-center"
             >
-              <img 
-                src={tech.icon} 
-                alt={tech.name}
-                className="w-8 h-8 group-hover:scale-110 transition-transform duration-300" 
-              />
-              <span className="text-white/60 group-hover:text-white font-['Plus_Jakarta_Sans']">
+              <div className="w-10 h-10 relative flex items-center justify-center">
+                <motion.div
+                  className="absolute inset-0 rounded-full"
+                  style={{ backgroundColor: `${tech.color}15` }}
+                  whileHover={{ scale: 1.2 }}
+                />
+                <img 
+                  src={tech.icon} 
+                  alt={tech.name}
+                  className="w-8 h-8 relative z-10 group-hover:scale-110 transition-transform duration-300" 
+                />
+              </div>
+              <span className="text-white/60 group-hover:text-white font-['Plus_Jakarta_Sans'] font-medium">
                 {tech.name}
               </span>
             </motion.div>

@@ -7,19 +7,19 @@ export const authenticateToken = async (req, res, next) => {
     try {
         const token = req.headers.authorization?.split(' ')[1];
         
-        console.log('🔒 Auth Check:', {
+        console.log(' Auth Check:', {
             hasToken: !!token,
             tokenPreview: token ? `${token.substring(0, 20)}...` : 'none',
             headers: req.headers.authorization
         });
 
         if (!token) {
-            console.log('❌ No token provided');
+            console.log(' No token provided');
             return res.status(401).json({ message: 'Authentication required' });
         }
 
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        console.log('🎫 Decoded token:', {
+        console.log(' Decoded token:', {
             id: decoded.id,
             role: decoded.role,
             exp: decoded.exp
@@ -30,25 +30,25 @@ export const authenticateToken = async (req, res, next) => {
         
         // If not in Users and role is curator, check Curators collection
         if (!user && decoded.role === 'curator') {
-            console.log('🔍 User not found in Users, checking Curators collection...');
+            console.log(' User not found in Users, checking Curators collection...');
             user = await Curator.findById(decoded.id);
         }
 
         // If still no user found, check Investors as fallback
         if (!user && decoded.role === 'investor') {
-            console.log('🔍 User not found in Users, checking Investors collection...');
+            console.log(' User not found in Users, checking Investors collection...');
             user = await Investor.findById(decoded.id);
         }
 
         if (!user) {
-            console.log('❌ User not found in any collection:', {
+            console.log(' User not found in any collection:', {
                 id: decoded.id,
                 role: decoded.role
             });
             return res.status(401).json({ message: 'User not found' });
         }
 
-        console.log('✅ User authenticated:', {
+        console.log(' User authenticated:', {
             id: user._id,
             role: user.role || decoded.role,
             collection: user.collection?.name
@@ -57,7 +57,7 @@ export const authenticateToken = async (req, res, next) => {
         req.user = user;
         next();
     } catch (error) {
-        console.error('🚫 Auth error:', {
+        console.error(' Auth error:', {
             name: error.name,
             message: error.message,
             stack: error.stack

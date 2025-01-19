@@ -1,6 +1,10 @@
 import React from 'react';
 import { LOCAL_STORAGE_KEYS } from '../utils/auth';
 
+// i added debug logs here, the reason being i was redirected to the auth page when i was logged in
+// i later found out that the error was in axios interceptors logic
+
+
 const ProtectedRoute = ({ children }) => {
   // Get stored data
   const token = localStorage.getItem(LOCAL_STORAGE_KEYS.TOKEN);
@@ -15,7 +19,7 @@ const ProtectedRoute = ({ children }) => {
 
   // Early return if no auth data
   if (!token || !userString) {
-    console.log('❌ Missing auth data');
+    console.log(' Missing auth data');
     return (
       <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center p-4">
         <div className="bg-white/[0.03] backdrop-blur-lg border border-white/10 
@@ -37,7 +41,7 @@ const ProtectedRoute = ({ children }) => {
       role: user?.role || 'none'
     });
   } catch (error) {
-    console.error('❌ Failed to parse user data:', error);
+    console.error(' Failed to parse user data:', error);
     return (
       <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center p-4">
         <div className="bg-white/[0.03] backdrop-blur-lg border border-white/10 
@@ -51,7 +55,7 @@ const ProtectedRoute = ({ children }) => {
 
   // Verify user and role exist
   if (!user || !user.role) {
-    console.warn('⚠️ Missing user or role:', { user });
+    console.warn(' Missing user or role:', { user });
     return (
       <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center p-4">
         <div className="bg-white/[0.03] backdrop-blur-lg border border-white/10 
@@ -78,7 +82,7 @@ const ProtectedRoute = ({ children }) => {
 
   // Wrong dashboard access
   if (isDashboardPath && !hasCorrectRole) {
-    console.log('⚠️ Wrong dashboard access');
+    console.log(' Wrong dashboard access');
     return (
       <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center p-4">
         <div className="bg-white/[0.03] backdrop-blur-lg border border-white/10 
@@ -93,7 +97,7 @@ const ProtectedRoute = ({ children }) => {
   }
 
   // Success case
-  console.log('✅ Access granted:', {
+  console.log(' Access granted:', {
     path: currentPath,
     role: userRole
   });

@@ -1,8 +1,8 @@
 import { generateImageHash } from './imageHash';
 import { checkImageHashExists, storeNFTData } from './api';
 
-// Constants for the model
-const HF_API_TOKEN = "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";
+
+const HF_API_TOKEN = "";
 export const MODELS = {
   FLUX_1_DEV: {
     url: "https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-dev",
@@ -20,7 +20,7 @@ export const MODELS = {
   }
 };
 
-// Keep track of recent prompts
+
 const recentPrompts = new Set();
 
 const generateUniquePrompt = (basePrompt, attempt = 0) => {
@@ -28,7 +28,6 @@ const generateUniquePrompt = (basePrompt, attempt = 0) => {
   const randomSeed = Math.random().toString(36).substring(7);
   const uniqueIdentifier = `${timestamp}-${randomSeed}`;
   
-  // Clean the prompt for comparison (remove timestamps and seeds)
   const cleanPrompt = basePrompt.replace(/\[seed:[^\]]+\]/, '').trim();
   
   if (recentPrompts.has(cleanPrompt) || attempt > 0) {
@@ -40,13 +39,13 @@ const generateUniquePrompt = (basePrompt, attempt = 0) => {
       'with subtle texture changes'
     ];
     const variation = variations[attempt % variations.length];
-    console.log(`🎨 Detected duplicate prompt! Adding variation "${variation}" to create unique NFT`);
+    console.log(` Detected duplicate prompt! Adding variation "${variation}" to create unique NFT`);
     return `${basePrompt} ${variation} [seed:${uniqueIdentifier}]`;
   }
   
-  // Store the clean prompt
+  
   recentPrompts.add(cleanPrompt);
-  // Keep set size manageable
+ 
   if (recentPrompts.size > 10) {
     recentPrompts.delete(recentPrompts.values().next().value);
   }
@@ -54,7 +53,7 @@ const generateUniquePrompt = (basePrompt, attempt = 0) => {
   return `${basePrompt} [seed:${uniqueIdentifier}]`;
 };
 
-// Simple cache implementation for each model
+
 const imageCache = new Map();
 
 export const generateImage = async (prompt) => {
@@ -98,7 +97,7 @@ export const generateImage = async (prompt) => {
     const blob = await response.blob();
     const imageUrl = URL.createObjectURL(blob);
     
-    // Cache the result
+    
     imageCache.set(cacheKey, imageUrl);
     
     return imageUrl;
@@ -114,16 +113,16 @@ export const generateUniqueImage = async (prompt, maxAttempts = 3) => {
   while (attempt < maxAttempts) {
     try {
       const uniquePrompt = generateUniquePrompt(prompt, attempt);
-      console.log(`🔍 Using prompt with FLUX.1 Dev: "${uniquePrompt}"`);
+      console.log(` Using prompt with FLUX.1 Dev: "${uniquePrompt}"`);
       
       const imageUrl = await generateImage(uniquePrompt);
       const imageHash = await generateImageHash(imageUrl);
       
-      // Check if hash exists in PostgreSQL
+      // Check if hash exists in PostgreSQL here
       const exists = await checkImageHashExists(imageHash);
       
       if (exists) {
-        console.log(`🔄 Hash ${imageHash} already exists. Attempting variation...`);
+        console.log(` Hash ${imageHash} already exists. Attempting variation...`);
         attempt++;
         continue;
       }
@@ -140,7 +139,7 @@ export const generateUniqueImage = async (prompt, maxAttempts = 3) => {
         }
       });
       
-      console.log(`✨ Successfully generated unique NFT using FLUX.1 Dev on attempt ${attempt + 1}`);
+      console.log(` Successfully generated unique NFT using FLUX.1 Dev on attempt ${attempt + 1}`);
       
       return {
         imageUrl,
@@ -150,7 +149,7 @@ export const generateUniqueImage = async (prompt, maxAttempts = 3) => {
       };
       
     } catch (error) {
-      console.error(`❌ Attempt ${attempt + 1} failed:`, error);
+      console.error(` Attempt ${attempt + 1} failed:`, error);
       attempt++;
     }
   }

@@ -3,7 +3,7 @@ import Curator from '../models/Curator.js';
 import contractService from '../services/contractService.js';
 
 export const createGallery = async (req) => {
-    const curatorId = req.user.id; // From auth middleware
+    const curatorId = req.user.id;
     const {
         name,
         description,

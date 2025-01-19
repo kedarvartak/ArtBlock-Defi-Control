@@ -1,7 +1,7 @@
 import express from 'express';
 import pkg from 'pg';
 const { Pool } = pkg;
-
+// this is for the ai image hash check
 const router = express.Router();
 
 // Use environment variables for PostgreSQL connection

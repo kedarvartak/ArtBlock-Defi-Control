@@ -8,12 +8,12 @@ const router = express.Router();
 // Dashboard route
 router.get('/dashboard/:walletAddress', authenticateToken, async (req, res) => {
   try {
-    const walletAddress = req.params.walletAddress.toLowerCase(); // Normalize the address
+    const walletAddress = req.params.walletAddress.toLowerCase(); 
     console.log('Fetching data for wallet:', walletAddress);
 
     // Find user by walletAddress
     const user = await User.findOne({ 
-      walletAddress: { $regex: new RegExp(walletAddress, 'i') } // Case-insensitive search
+      walletAddress: { $regex: new RegExp(walletAddress, 'i') } 
     });
 
     if (!user) {

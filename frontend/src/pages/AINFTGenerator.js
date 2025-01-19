@@ -160,10 +160,10 @@ const AINFTGenerator = () => {
     
     try {
       // First, enhance the prompt using ChatGPT
-      console.log('🎯 Original prompt:', prompt);
+      console.log('Original prompt:', prompt);
       const improvedPrompt = await enhancePrompt(prompt);
       setEnhancedPrompt(improvedPrompt);
-      console.log('✨ Enhanced prompt:', improvedPrompt);
+      console.log('Enhanced prompt:', improvedPrompt);
       
       // Generate image with enhanced prompt
       const { imageUrl, imageHash, prompt: finalPrompt, modelUsed } = 
@@ -184,7 +184,7 @@ const AINFTGenerator = () => {
       
     } catch (error) {
       setError(error.message || "Failed to generate unique image. Please try again.");
-      console.error("❌ Error:", error);
+      console.error(" Error:", error);
     } finally {
       stopProgressSimulation();
       setLoading(false);

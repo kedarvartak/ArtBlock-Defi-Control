@@ -8,11 +8,11 @@ const axiosInstance = axios.create({
   }
 });
 
-// Add a request interceptor to attach the token
+
 axiosInstance.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem(LOCAL_STORAGE_KEYS.TOKEN);
-    console.log('🔒 Request Config:', {
+    console.log(' Request Config:', {
       url: config.url,
       hasToken: !!token,
       tokenPreview: token ? `${token.substring(0, 20)}...` : 'none'
@@ -31,12 +31,12 @@ axiosInstance.interceptors.request.use(
   }
 );
 
-// Add a response interceptor to handle 401 errors
+
 axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // Clear local storage and redirect to auth page
+      // we fucking dont wanna redirect to auth page
       localStorage.clear();
      
     }

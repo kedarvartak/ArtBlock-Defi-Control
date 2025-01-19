@@ -125,9 +125,9 @@ export const mintArtwork = async (req, res) => {
             gallery,
             uri,
             price,
-            tokenId: mintedTokenId, // Store the numeric tokenId
+            tokenId: mintedTokenId, 
             isListed: true,
-            // ... other fields ...
+           
         });
 
         await newNFT.save();

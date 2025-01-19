@@ -65,14 +65,14 @@ router.get('/galleries/:galleryId/submissions', async (req, res) => {
 router.use(authenticateToken);
 router.post('/galleries/create', authenticateCurator, async (req, res) => {
     try {
-        console.log('📮 Create Gallery Request:', {
+        console.log(' Create Gallery Request:', {
             body: req.body,
             curator: req.user._id
         });
 
         const gallery = await createGallery(req);
         
-        console.log('✅ Gallery created:', {
+        console.log(' Gallery created:', {
             id: gallery._id,
             name: gallery.name,
             curator: gallery.curator
@@ -84,7 +84,7 @@ router.post('/galleries/create', authenticateCurator, async (req, res) => {
         });
 
     } catch (error) {
-        console.error('❌ Gallery creation error:', error);
+        console.error(' Gallery creation error:', error);
         res.status(500).json({
             success: false,
             message: error.message

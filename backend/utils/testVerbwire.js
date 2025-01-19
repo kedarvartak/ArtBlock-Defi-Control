@@ -1,5 +1,5 @@
 import axios from 'axios';
-
+// im testing the verbwire api key here because verbwire is a pain in the ass and i need to make sure it works. verbwire is a pain in the ass
 const testVerbwireKey = async () => {
   try {
     const response = await axios({
@@ -21,5 +21,4 @@ const testVerbwireKey = async () => {
   }
 };
 
-// Run the test
 testVerbwireKey(); 

@@ -27,7 +27,7 @@ export const getCuratorDashboard = async (req, res) => {
         .lean()
     };
 
-    console.log('Sending response:', response); // Debug log
+    console.log('Sending response:', response); 
     res.json(response);
 
   } catch (error) {
@@ -39,7 +39,7 @@ export const getCuratorDashboard = async (req, res) => {
 // Get all galleries
 export const getAllGalleries = async (req, res) => {
   try {
-    console.log('Fetching all galleries...'); // Debug log
+    console.log('Fetching all galleries...'); 
 
     const galleries = await Gallery.find()
       .populate({
@@ -47,9 +47,9 @@ export const getAllGalleries = async (req, res) => {
         select: 'displayName walletAddress profile'
       })
       .sort({ createdAt: -1 })
-      .lean(); // Use lean() for better performance
+      .lean(); 
 
-    console.log('Found galleries:', galleries); // Debug log
+    console.log('Found galleries:', galleries); 
 
     // Transform the data safely
     const transformedGalleries = galleries.map(gallery => ({
@@ -59,21 +59,20 @@ export const getAllGalleries = async (req, res) => {
       coverImage: gallery.coverImage || '',
       curatorAddress: gallery.curator?.walletAddress || '',
       curator: gallery.curator?.displayName || 'Unknown Curator',
-      nftCount: gallery.artworksCount || 0, // Changed from nftCount to match your schema
-      artistCount: gallery.artistsCount || 0, // Changed from artistCount to match your schema
-      totalVolume: gallery.totalVolume || 0,
+      nftCount: gallery.artworksCount || 0, 
+      artistCount: gallery.artistsCount || 0, 
       floorPrice: gallery.floorPrice || 0,
       verified: gallery.verified || false,
       createdAt: gallery.createdAt
     }));
 
-    console.log('Transformed galleries:', transformedGalleries); // Debug log
+    console.log('Transformed galleries:', transformedGalleries); 
 
     res.json({
       galleries: transformedGalleries
     });
   } catch (error) {
-    console.error('Error in getAllGalleries:', error); // Detailed error logging
+    console.error('Error in getAllGalleries:', error);
     res.status(500).json({ 
       message: 'Error fetching galleries',
       error: error.message 

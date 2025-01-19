@@ -141,11 +141,11 @@ class EventListenerService {
     }
 
     async handleRevenueReceived(galleryAddress, amount, timestamp) {
-        // Implementation remains the same
+       // this im gonna implement on hackathon day
     }
 
     async handleRevenueClaimed(galleryAddress, amount, timestamp, transactionHash) {
-        // Implementation remains the same
+       // this im gonna implement on hackathon day 
     }
 }
 

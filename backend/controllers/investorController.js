@@ -1,7 +1,5 @@
 import Investor from '../models/Investor.js';
 import NFT from '../models/nft.model.js';
-import { setupContracts } from '../contracts/index.js';
-import { ethers } from 'ethers';
 import Transaction from '../models/Transaction.js';
 import Gallery from '../models/Gallery.js';
 import User from '../models/User.js';
@@ -9,7 +7,7 @@ import User from '../models/User.js';
 // Get investor dashboard data
 const getDashboardData = async (req) => {
   try {
-    console.log('🔍 Finding investor:', req.user._id);
+    console.log(' Finding investor:', req.user._id);
 
     const investor = await Investor.findById(req.user._id)
       .populate('portfolio.watchlist')
@@ -20,11 +18,11 @@ const getDashboardData = async (req) => {
       });
 
     if (!investor) {
-      console.log('❌ Investor not found:', req.user._id);
+      console.log(' Investor not found:', req.user._id);
       throw new Error('Investor not found');
     }
 
-    console.log('✅ Investor found, calculating analytics...');
+    console.log(' Investor found, calculating analytics...');
 
     // Calculate additional analytics
     const portfolioValue = investor.portfolio.ownedNFTs.reduce(
@@ -48,7 +46,7 @@ const getDashboardData = async (req) => {
 
     await investor.save();
 
-    console.log('📊 Returning dashboard data:', {
+    console.log(' Returning dashboard data:', {
       hasProfile: !!investor.profile,
       hasAnalytics: !!investor.analytics,
       portfolioNFTs: investor.portfolio?.ownedNFTs?.length || 0
@@ -75,7 +73,7 @@ const getDashboardData = async (req) => {
       }
     };
   } catch (error) {
-    console.error('🚫 Error in getDashboardData:', error);
+    console.error(' Error in getDashboardData:', error);
     throw error; // Let the route handler catch this
   }
 };
@@ -189,7 +187,7 @@ export const buyArtwork = async (nftId, buyer, data) => {
         });
 
         if (!nft && data.nftData) {
-            console.log('📝 Creating new NFT record from data:', data.nftData);
+            console.log(' Creating new NFT record from data:', data.nftData);
             // Create NFT record if it doesn't exist
             nft = new NFT({
                 tokenId: data.tokenId,
@@ -239,7 +237,7 @@ export const buyArtwork = async (nftId, buyer, data) => {
             gasInfo: data.gasInfo
         });
 
-        console.log('💾 Saving transaction:', {
+        console.log(' Saving transaction:', {
             id: transaction._id,
             hash: data.transactionHash
         });
@@ -276,7 +274,7 @@ export const buyArtwork = async (nftId, buyer, data) => {
             );
         }
 
-        console.log('✅ Purchase completed successfully');
+        console.log(' Purchase completed successfully');
 
         return {
             success: true,
@@ -286,7 +284,7 @@ export const buyArtwork = async (nftId, buyer, data) => {
         };
 
     } catch (error) {
-        console.error('❌ Purchase error:', error);
+        console.error(' Purchase error:', error);
         throw error;
     }
 };

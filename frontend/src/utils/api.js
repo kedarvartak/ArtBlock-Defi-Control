@@ -1,6 +1,6 @@
 // For AI image generation
 const AI_SERVICE_URL = 'http://localhost:3001/api';
-
+// i mistakenly named two ports in backend env to be diff 
 // For authentication and other services
 const AUTH_SERVICE_URL = 'http://localhost:5000/api';
 

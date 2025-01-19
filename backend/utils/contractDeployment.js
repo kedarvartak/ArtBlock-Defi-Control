@@ -1,6 +1,6 @@
 import axios from 'axios';
 import FormData from 'form-data';
-
+// were deploying this contract for the user when he initially signsup for the app, were not doing shit with this contract, just for verbwire's sake 
 export const deployContractForUser = async (username) => {
   try {
     const formData = new FormData();

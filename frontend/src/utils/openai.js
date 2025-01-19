@@ -1,5 +1,5 @@
-const OPENAI_API_KEY = "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";
-
+const OPENAI_API_KEY = "";
+// we use openai to enhance the prompt and pass on the prompt to huggingface model
 export const enhancePrompt = async (userPrompt) => {
   try {
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -35,7 +35,7 @@ export const enhancePrompt = async (userPrompt) => {
 
     return data.choices[0].message.content;
   } catch (error) {
-    console.error('🔴 OpenAI API Error:', error);
+    console.error('OpenAI API Error:', error);
     // Return a enhanced version without API if there's an error
     return `${userPrompt}, digital art style, highly detailed, intricate, elegant, sharp focus, concept art, character design, trending on artstation, cinematic lighting, dynamic composition`;
   }

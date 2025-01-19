@@ -13,7 +13,7 @@ import aiImageRoutes from './routes/nft.js';
 
 dotenv.config();
 
-// Create two separate Express apps
+// Creating two separate express apps for the auth and ai services
 const authApp = express();  // MongoDB services
 const aiApp = express();    // PostgreSQL services
 

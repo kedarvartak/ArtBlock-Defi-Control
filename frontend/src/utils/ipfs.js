@@ -1,5 +1,5 @@
 import axios from 'axios';
-
+// were using pinata to store the images and metadata we mint the nft on the blockchain
 const pinataApiKey = process.env.REACT_APP_PINATA_API_KEY;
 const pinataSecretKey = process.env.REACT_APP_PINATA_SECRET_KEY;
 

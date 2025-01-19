@@ -10,7 +10,7 @@ import { ethers } from 'ethers';
 
 // Array of retro-futuristic NFT art images for gallery covers
 const GALLERY_IMAGES = [
-  // Cyberpunk / Retro-futuristic Art
+  // Cyberpunk / Retro-futuristic Art imported from unsplash lmao 
   'https://images.unsplash.com/photo-1634973357973-f2ed2657db3c?q=80&w=2070', // Neon city
   'https://images.unsplash.com/photo-1592492152545-9695d3f473f4?q=80&w=2070', // Digital landscape
   'https://images.unsplash.com/photo-1558244661-d248897f7bc4?q=80&w=2070', // Abstract tech
@@ -118,7 +118,7 @@ const Galleries = () => {
               <span className="px-6 py-2 bg-[#6366F1]/10 border border-[#6366F1]/40 
                 rounded-xl text-[#6366F1] text-base font-bold inline-block"
               >
-                Explore Galleries 🏛️
+                Explore Galleries 
               </span>
             </motion.div>
             <h1 className="text-5xl md:text-6xl font-black text-white 

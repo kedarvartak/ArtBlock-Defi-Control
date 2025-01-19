@@ -66,7 +66,7 @@ const CuratorDashboard = () => {
         const token = localStorage.getItem(LOCAL_STORAGE_KEYS.TOKEN);
         const user = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEYS.USER));
         
-        console.log('🔑 Auth Check:', {
+        console.log(' Auth Check:', {
           hasToken: !!token,
           hasUser: !!user,
           userId: user?.id,

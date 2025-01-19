@@ -1,5 +1,5 @@
 import crypto from 'crypto-js';
-
+// we convert each image to hash store the hash in db and check if the hash exists in db
 export const generateImageHash = async (imageUrl) => {
   try {
     // Fetch the image
